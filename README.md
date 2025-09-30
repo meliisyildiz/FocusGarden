@@ -1,4 +1,5 @@
 # 🌱 Focus Garden
+![Focus Garden Timer](img.jpg)
 
 > A cute and aesthetic focus timer that helps you stay productive while watching your adorable plant grow! 🌸
 
