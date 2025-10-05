@@ -7,6 +7,7 @@ const FocusPlantTimer = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [growthStage, setGrowthStage] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
   const intervalRef = useRef(null);
 
   const timeOptions = [
@@ -80,6 +81,7 @@ const FocusPlantTimer = () => {
     setIsRunning(false);
     setGrowthStage(0);
     setElapsedTime(0);
+    setShowConfetti(false);
   };
 
   const toggleTimer = () => {
@@ -93,6 +95,7 @@ const FocusPlantTimer = () => {
     setTimeLeft(selectedTime || 0);
     setGrowthStage(0);
     setElapsedTime(0);
+    setShowConfetti(false);
   };
 
   const formatTime = (seconds) => {
@@ -101,122 +104,138 @@ const FocusPlantTimer = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const PlantStage = ({ stage }) => {
-    const stages = [
-      // Stage 0: Seed in pot
-      <div className="relative h-32 flex items-end justify-center">
-        <div className="w-20 h-14 bg-gradient-to-b from-amber-700 to-amber-800 rounded-t-3xl relative">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-amber-900 rounded-full"></div>
-        </div>
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-emerald-900 rounded-full"></div>
-      </div>,
-      
-      // Stage 1: First sprout
-      <div className="relative h-32 flex items-end justify-center">
-        <div className="w-20 h-14 bg-gradient-to-b from-amber-700 to-amber-800 rounded-t-3xl relative">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-amber-900 rounded-full"></div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-          <div className="w-2 h-12 bg-gradient-to-t from-emerald-700 to-emerald-500"></div>
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-6 bg-emerald-400 rounded-full"></div>
-        </div>
-      </div>,
-      
-      // Stage 2: Growing stem with first leaf
-      <div className="relative h-32 flex items-end justify-center">
-        <div className="w-20 h-14 bg-gradient-to-b from-amber-700 to-amber-800 rounded-t-3xl relative">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-amber-900 rounded-full"></div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-          <div className="w-2 h-20 bg-gradient-to-t from-emerald-700 to-emerald-500"></div>
-          <div className="absolute top-10 -left-3 w-8 h-3 bg-emerald-500 rounded-full transform -rotate-45"></div>
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-4 h-7 bg-emerald-400 rounded-full"></div>
-        </div>
-      </div>,
-      
-      // Stage 3: Taller with more leaves
-      <div className="relative h-32 flex items-end justify-center">
-        <div className="w-20 h-14 bg-gradient-to-b from-amber-700 to-amber-800 rounded-t-3xl relative">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-amber-900 rounded-full"></div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-          <div className="w-2 h-24 bg-gradient-to-t from-emerald-700 to-emerald-600"></div>
-          <div className="absolute top-12 -left-4 w-10 h-3 bg-emerald-500 rounded-full transform -rotate-45"></div>
-          <div className="absolute top-12 -right-4 w-10 h-3 bg-emerald-500 rounded-full transform rotate-45"></div>
-          <div className="absolute top-16 -left-3 w-9 h-3 bg-emerald-400 rounded-full transform -rotate-30"></div>
-        </div>
-      </div>,
-      
-      // Stage 4: Bud forming
-      <div className="relative h-32 flex items-end justify-center">
-        <div className="w-20 h-14 bg-gradient-to-b from-amber-700 to-amber-800 rounded-t-3xl relative">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-amber-900 rounded-full"></div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-          <div className="w-2 h-28 bg-gradient-to-t from-emerald-700 to-emerald-600"></div>
-          <div className="absolute top-14 -left-4 w-10 h-3 bg-emerald-500 rounded-full transform -rotate-45"></div>
-          <div className="absolute top-14 -right-4 w-10 h-3 bg-emerald-500 rounded-full transform rotate-45"></div>
-          <div className="absolute top-18 -left-3 w-9 h-3 bg-emerald-400 rounded-full transform -rotate-30"></div>
-          <div className="absolute top-18 -right-3 w-9 h-3 bg-emerald-400 rounded-full transform rotate-30"></div>
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-            <div className="w-4 h-6 bg-gradient-to-t from-purple-400 to-purple-300 rounded-full"></div>
+  const Confetti = () => {
+    const leaves = Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 2,
+      duration: 3 + Math.random() * 2,
+    }));
+
+    return (
+      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+        {leaves.map((leaf) => (
+          <div
+            key={leaf.id}
+            className="absolute text-2xl"
+            style={{
+              left: `${leaf.left}%`,
+              top: '-10%',
+              animation: `fall ${leaf.duration}s linear ${leaf.delay}s forwards`,
+            }}
+          >
+            🍃
           </div>
+        ))}
+      </div>
+    );
+  };
+    const stages = [
+      // Stage 0: Seed
+      <div className="relative h-32 flex items-end justify-center">
+        <div className="w-24 h-16 bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-full relative shadow-lg">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 bg-amber-900 rounded-full opacity-40"></div>
+        </div>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-5 h-5 bg-emerald-800 rounded-full shadow-md"></div>
+      </div>,
+      
+      // Stage 1: Sprout
+      <div className="relative h-32 flex items-end justify-center">
+        <div className="w-24 h-16 bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-full relative shadow-lg">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 bg-amber-900 rounded-full opacity-40"></div>
+        </div>
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
+          <div className="w-2 h-14 bg-gradient-to-t from-emerald-700 via-emerald-600 to-emerald-500 rounded-t-sm shadow"></div>
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-8 bg-gradient-to-t from-emerald-500 to-emerald-300 rounded-full opacity-80"></div>
         </div>
       </div>,
       
-      // Stage 5: Lily opening
+      // Stage 2: Young plant
       <div className="relative h-32 flex items-end justify-center">
-        <div className="w-20 h-14 bg-gradient-to-b from-amber-700 to-amber-800 rounded-t-3xl relative">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-amber-900 rounded-full"></div>
+        <div className="w-24 h-16 bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-full relative shadow-lg">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 bg-amber-900 rounded-full opacity-40"></div>
         </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-          <div className="w-2 h-28 bg-gradient-to-t from-emerald-700 to-emerald-600"></div>
-          <div className="absolute top-14 -left-4 w-10 h-3 bg-emerald-500 rounded-full transform -rotate-45"></div>
-          <div className="absolute top-14 -right-4 w-10 h-3 bg-emerald-500 rounded-full transform rotate-45"></div>
-          <div className="absolute top-18 -left-3 w-9 h-3 bg-emerald-400 rounded-full transform -rotate-30"></div>
-          <div className="absolute top-18 -right-3 w-9 h-3 bg-emerald-400 rounded-full transform rotate-30"></div>
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2">
-            <div className="relative w-12 h-12">
-              {/* Petals starting to open */}
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-8 bg-gradient-to-t from-purple-400 to-purple-200 rounded-t-full"></div>
-              <div className="absolute top-3 left-1 w-4 h-7 bg-gradient-to-t from-purple-400 to-purple-200 rounded-t-full transform -rotate-30"></div>
-              <div className="absolute top-3 right-1 w-4 h-7 bg-gradient-to-t from-purple-400 to-purple-200 rounded-t-full transform rotate-30"></div>
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
+          <div className="w-2.5 h-20 bg-gradient-to-t from-emerald-800 via-emerald-600 to-emerald-500 rounded-t-sm shadow"></div>
+          <div className="absolute top-12 -left-4 w-12 h-4 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transform -rotate-45 shadow-sm"></div>
+          <div className="absolute top-14 -right-4 w-10 h-3 bg-gradient-to-l from-emerald-600 to-emerald-400 rounded-full transform rotate-35 shadow-sm"></div>
+        </div>
+      </div>,
+      
+      // Stage 3: Growing
+      <div className="relative h-32 flex items-end justify-center">
+        <div className="w-24 h-16 bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-full relative shadow-lg">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 bg-amber-900 rounded-full opacity-40"></div>
+        </div>
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
+          <div className="w-3 h-26 bg-gradient-to-t from-emerald-800 via-emerald-700 to-emerald-600 rounded-t-sm shadow"></div>
+          <div className="absolute top-10 -left-5 w-14 h-5 bg-gradient-to-r from-emerald-700 to-emerald-400 rounded-full transform -rotate-40 shadow"></div>
+          <div className="absolute top-12 -right-5 w-13 h-4 bg-gradient-to-l from-emerald-700 to-emerald-400 rounded-full transform rotate-40 shadow"></div>
+          <div className="absolute top-16 -left-4 w-11 h-4 bg-gradient-to-r from-emerald-600 to-emerald-300 rounded-full transform -rotate-25 shadow-sm"></div>
+          <div className="absolute top-18 -right-4 w-10 h-3 bg-gradient-to-l from-emerald-600 to-emerald-300 rounded-full transform rotate-25 shadow-sm"></div>
+        </div>
+      </div>,
+      
+      // Stage 4: Bud
+      <div className="relative h-32 flex items-end justify-center">
+        <div className="w-24 h-16 bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-full relative shadow-lg">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 bg-amber-900 rounded-full opacity-40"></div>
+        </div>
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
+          <div className="w-3 h-28 bg-gradient-to-t from-emerald-800 via-emerald-700 to-emerald-600 rounded-t-sm shadow"></div>
+          <div className="absolute top-12 -left-5 w-14 h-5 bg-gradient-to-r from-emerald-700 to-emerald-400 rounded-full transform -rotate-40 shadow"></div>
+          <div className="absolute top-14 -right-5 w-13 h-4 bg-gradient-to-l from-emerald-700 to-emerald-400 rounded-full transform rotate-40 shadow"></div>
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-8 bg-gradient-to-t from-purple-600 to-purple-400 rounded-full shadow-md"></div>
+        </div>
+      </div>,
+      
+      // Stage 5: Opening
+      <div className="relative h-32 flex items-end justify-center">
+        <div className="w-24 h-16 bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-full relative shadow-lg">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 bg-amber-900 rounded-full opacity-40"></div>
+        </div>
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
+          <div className="w-3 h-28 bg-gradient-to-t from-emerald-800 via-emerald-700 to-emerald-600 rounded-t-sm shadow"></div>
+          <div className="absolute top-14 -left-5 w-14 h-5 bg-gradient-to-r from-emerald-700 to-emerald-400 rounded-full transform -rotate-40 shadow"></div>
+          <div className="absolute top-16 -right-5 w-13 h-4 bg-gradient-to-l from-emerald-700 to-emerald-400 rounded-full transform rotate-40 shadow"></div>
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2">
+            <div className="relative w-14 h-14">
+              <div className="absolute top-1 left-1/2 -translate-x-1/2 w-4 h-10 bg-gradient-to-t from-purple-600 via-purple-400 to-purple-200 rounded-t-full shadow"></div>
+              <div className="absolute top-2 left-1 w-4 h-9 bg-gradient-to-t from-purple-600 via-purple-400 to-purple-200 rounded-t-full transform -rotate-35 shadow"></div>
+              <div className="absolute top-2 right-1 w-4 h-9 bg-gradient-to-t from-purple-600 via-purple-400 to-purple-200 rounded-t-full transform rotate-35 shadow"></div>
+              <div className="absolute top-6 left-1/2 -translate-x-1/2 w-2 h-3 bg-yellow-300 rounded-full"></div>
             </div>
           </div>
         </div>
       </div>,
       
-      // Stage 6: Full bloom lily
+      // Stage 6: Full bloom
       <div className="relative h-32 flex items-end justify-center">
-        <div className="w-20 h-14 bg-gradient-to-b from-amber-700 to-amber-800 rounded-t-3xl relative">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-amber-900 rounded-full"></div>
+        <div className="w-24 h-16 bg-gradient-to-b from-amber-600 to-amber-800 rounded-t-full relative shadow-lg">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-4 h-4 bg-amber-900 rounded-full opacity-40"></div>
         </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-          <div className="w-2 h-28 bg-gradient-to-t from-emerald-700 to-emerald-600"></div>
-          <div className="absolute top-14 -left-4 w-10 h-3 bg-emerald-500 rounded-full transform -rotate-45"></div>
-          <div className="absolute top-14 -right-4 w-10 h-3 bg-emerald-500 rounded-full transform rotate-45"></div>
-          <div className="absolute top-18 -left-3 w-9 h-3 bg-emerald-400 rounded-full transform -rotate-30"></div>
-          <div className="absolute top-18 -right-3 w-9 h-3 bg-emerald-400 rounded-full transform rotate-30"></div>
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2">
-            <div className="relative w-16 h-16">
-              {/* Fully bloomed lily petals */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-10 bg-gradient-to-t from-purple-500 to-purple-200 rounded-t-full"></div>
-              <div className="absolute top-1 left-0 w-5 h-9 bg-gradient-to-t from-purple-500 to-purple-200 rounded-t-full transform -rotate-45"></div>
-              <div className="absolute top-1 right-0 w-5 h-9 bg-gradient-to-t from-purple-500 to-purple-200 rounded-t-full transform rotate-45"></div>
-              <div className="absolute top-3 -left-1 w-4 h-8 bg-gradient-to-t from-purple-400 to-purple-200 rounded-t-full transform -rotate-60"></div>
-              <div className="absolute top-3 -right-1 w-4 h-8 bg-gradient-to-t from-purple-400 to-purple-200 rounded-t-full transform rotate-60"></div>
-              <div className="absolute top-2 left-2 w-4 h-7 bg-gradient-to-t from-purple-300 to-pink-200 rounded-t-full transform -rotate-30"></div>
-              <div className="absolute top-2 right-2 w-4 h-7 bg-gradient-to-t from-purple-300 to-pink-200 rounded-t-full transform rotate-30"></div>
-              {/* Center stamens */}
-              <div className="absolute top-5 left-1/2 -translate-x-1/2 flex gap-1">
-                <div className="w-1 h-4 bg-yellow-400"></div>
-                <div className="w-1 h-4 bg-yellow-400"></div>
-                <div className="w-1 h-4 bg-yellow-400"></div>
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
+          <div className="w-3 h-28 bg-gradient-to-t from-emerald-800 via-emerald-700 to-emerald-600 rounded-t-sm shadow-md"></div>
+          <div className="absolute top-14 -left-5 w-14 h-5 bg-gradient-to-r from-emerald-700 to-emerald-400 rounded-full transform -rotate-40 shadow"></div>
+          <div className="absolute top-16 -right-5 w-13 h-4 bg-gradient-to-l from-emerald-700 to-emerald-400 rounded-full transform rotate-40 shadow"></div>
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2">
+            <div className="relative w-18 h-18">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-12 bg-gradient-to-t from-purple-700 via-purple-500 to-purple-200 rounded-t-full shadow-lg"></div>
+              <div className="absolute top-1 -left-1 w-5 h-11 bg-gradient-to-t from-purple-700 via-purple-500 to-purple-200 rounded-t-full transform -rotate-50 shadow-lg"></div>
+              <div className="absolute top-1 -right-1 w-5 h-11 bg-gradient-to-t from-purple-700 via-purple-500 to-purple-200 rounded-t-full transform rotate-50 shadow-lg"></div>
+              <div className="absolute top-3 -left-2 w-4 h-9 bg-gradient-to-t from-purple-600 via-purple-400 to-pink-200 rounded-t-full transform -rotate-70 shadow-md"></div>
+              <div className="absolute top-3 -right-2 w-4 h-9 bg-gradient-to-t from-purple-600 via-purple-400 to-pink-200 rounded-t-full transform rotate-70 shadow-md"></div>
+              <div className="absolute top-2 left-1 w-4 h-8 bg-gradient-to-t from-purple-500 via-purple-300 to-pink-100 rounded-t-full transform -rotate-30 shadow"></div>
+              <div className="absolute top-2 right-1 w-4 h-8 bg-gradient-to-t from-purple-500 via-purple-300 to-pink-100 rounded-t-full transform rotate-30 shadow"></div>
+              <div className="absolute top-6 left-1/2 -translate-x-1/2 flex gap-0.5">
+                <div className="w-1 h-5 bg-yellow-400 rounded-full shadow"></div>
+                <div className="w-1 h-5 bg-yellow-400 rounded-full shadow"></div>
+                <div className="w-1 h-5 bg-yellow-400 rounded-full shadow"></div>
               </div>
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 flex gap-1">
-                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
-                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
-                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+              <div className="absolute top-10 left-1/2 -translate-x-1/2 flex gap-1">
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full shadow"></div>
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full shadow"></div>
+                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full shadow"></div>
               </div>
             </div>
           </div>
@@ -233,6 +252,7 @@ const FocusPlantTimer = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-100 via-green-50 to-teal-50 flex items-center justify-center p-8">
+      {showConfetti && <Confetti />}
       <div className="bg-white/60 backdrop-blur rounded-3xl shadow-2xl p-8 md:p-12 max-w-md w-full border-4 border-green-100">
         <h1 className="text-4xl font-bold text-center text-green-700 mb-2">
           Focus Garden
@@ -305,6 +325,6 @@ const FocusPlantTimer = () => {
       </div>
     </div>
   );
-};
+;
 
 export default FocusPlantTimer;
