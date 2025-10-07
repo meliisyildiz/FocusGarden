@@ -105,12 +105,14 @@ const FocusPlantTimer = () => {
   };
 
   const Confetti = () => {
-    const leaves = Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      delay: Math.random() * 2,
-      duration: 3 + Math.random() * 2,
-    }));
+    const leaves = Array.from({ length: 30 }, (_, i) => {
+      return {
+        id: i,
+        left: Math.random() * 100,
+        delay: Math.random() * 2,
+        duration: 3 + Math.random() * 2,
+      };
+    });
 
     return (
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
@@ -130,6 +132,8 @@ const FocusPlantTimer = () => {
       </div>
     );
   };
+
+  const PlantStage = ({ stage }) => {
     const stages = [
       // Stage 0: Seed
       <div className="relative h-32 flex items-end justify-center">
@@ -325,6 +329,6 @@ const FocusPlantTimer = () => {
       </div>
     </div>
   );
-;
+};
 
 export default FocusPlantTimer;
