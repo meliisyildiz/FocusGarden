@@ -8,6 +8,8 @@ const FocusPlantTimer = () => {
   const [growthStage, setGrowthStage] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customMinutes, setCustomMinutes] = useState('');
   const intervalRef = useRef(null);
 
   const timeOptions = [
@@ -82,6 +84,15 @@ const FocusPlantTimer = () => {
     setGrowthStage(0);
     setElapsedTime(0);
     setShowConfetti(false);
+    setShowCustomInput(false);
+  };
+
+  const handleCustomTime = () => {
+    const minutes = parseInt(customMinutes);
+    if (minutes && minutes > 0 && minutes <= 120) {
+      const seconds = minutes * 60;
+      handleTimeSelect(seconds);
+    }
   };
 
   const toggleTimer = () => {
@@ -279,6 +290,44 @@ const FocusPlantTimer = () => {
                 {option.label}
               </button>
             ))}
+            
+            {!showCustomInput ? (
+              <button
+                onClick={() => setShowCustomInput(true)}
+                className="w-full py-4 px-6 bg-gradient-to-r from-purple-300 to-pink-300 hover:from-purple-400 hover:to-pink-400 text-purple-800 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                Custom Time ✏️
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max="120"
+                    value={customMinutes}
+                    onChange={(e) => setCustomMinutes(e.target.value)}
+                    placeholder="Enter minutes (1-120)"
+                    className="flex-1 py-4 px-6 rounded-2xl border-2 border-purple-300 focus:border-purple-500 outline-none text-green-800 font-semibold"
+                  />
+                  <button
+                    onClick={handleCustomTime}
+                    className="py-4 px-6 bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    Start
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowCustomInput(false);
+                    setCustomMinutes('');
+                  }}
+                  className="w-full py-2 text-purple-600 hover:text-purple-800 font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-8">
